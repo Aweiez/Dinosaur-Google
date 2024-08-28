@@ -1,0 +1,87 @@
+// Get canvas element
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Game variables
+let dino = { x: 50, y: 200, width: 40, height: 60, jumping: false };
+let obstacle = { x: 600, y: 200, width: 20, height: 40 };
+let score = 0;
+let gameLoop;
+
+// Jump function
+function jump() {
+    if (!dino.jumping) {
+        dino.jumping = true;
+        let jumpHeight = 0;
+        const jumpInterval = setInterval(() => {
+            if (jumpHeight < 100 && dino.jumping) {
+                dino.y -= 5;
+                jumpHeight += 5;
+            } else {
+                dino.jumping = false;
+                clearInterval(jumpInterval);
+                const fallInterval = setInterval(() => {
+                    if (dino.y < 200) {
+                        dino.y += 5;
+                    } else {
+                        clearInterval(fallInterval);
+                    }
+                }, 20);
+            }
+        }, 20);
+    }
+}
+
+// Update game state
+function update() {
+    obstacle.x -= 5;
+    if (obstacle.x < -20) {
+        obstacle.x = 600;
+        score++;
+    }
+
+    // Check for collision
+    if (
+        dino.x < obstacle.x + obstacle.width &&
+        dino.x + dino.width > obstacle.x &&
+        dino.y < obstacle.y + obstacle.height &&
+        dino.y + dino.height > obstacle.y
+    ) {
+        clearInterval(gameLoop);
+        alert('Game Over! Your score: ' + score);
+    }
+}
+
+// Draw game objects
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw dino
+    ctx.fillStyle = 'green';
+    ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+    
+    // Draw obstacle
+    ctx.fillStyle = 'red';
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    
+    // Draw score
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText('Score: ' + score, 10, 30);
+}
+
+// Game loop
+function gameStep() {
+    update();
+    draw();
+}
+
+// Start game
+gameLoop = setInterval(gameStep, 20);
+
+// Event listener for jump
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        jump();
+    }
+});
